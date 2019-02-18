@@ -1,0 +1,123 @@
+% prog -> {classDecl} {funcDef} 'main' funcBody ';'
+prog ->  classDecls funcDefs 'main' funcBody ';'
+classDecls -> classDecl classDecls | EPSILON
+funcDefs -> funcDef funcDefs | EPSILON
+
+% classDecl -> 'class' 'id' [':' 'id' {',' 'id'}] '{' {varDecl} {funcDecl} '}' ';'
+classDecl -> 'class' 'id' classParent '{' varDecls funcDecls '}' ';' 
+classParent -> ':' 'id' moreParent | EPSILON
+moreParent -> ',' 'id' moreParent | EPSILON
+varDecls -> varDecl varDecls | EPSILON
+funcDecls -> funcDecl funcDecls |EPSILON
+
+% funcDecl -> type 'id' '(' fParams ')' ';' 
+funcDecl -> type 'id' '(' fParams ')' ';'
+
+% funcHead ->  type ['id' 'sr'] 'id' '(' fParams ')'
+funcHead -> type owner 'id' '(' fParams ')'
+owner -> 'id' 'sr' | EPSILON
+
+% funcDef -> funcHead funcBody ';'
+funcDef -> funcHead funcBody ';'
+
+% funcBody -> '{' {varDecl} {statement} '}'
+funcBody -> '{' varDecls statements '}'
+statements -> statement statements | EPSILON
+
+% varDecl -> type 'id' {arraySize} ';'
+varDecl -> type 'id' arraySizes ';'
+arraySizes -> arraySize arraySizes | EPSILON
+
+% statement -> assignStat ';'
+%             |'if' '(' expr ')' 'then' statBlock 'else' statBlock ';'
+%             |'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' statBlock ';'
+%             |'read' '(' variable ')' ';'
+%             | 'write' '(' expr ')' ';'
+%             'return' '(' expr ')' ';'
+statement -> assignStat ';'
+             |'if' '(' expr ')' 'then' statBlock 'else' statBlock ';'
+             |'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' statBlock ';'
+             |'read' '(' variable ')' ';'
+             |'write' '(' expr ')' ';'
+             |'return' '(' expr ')' ';'
+             
+% assignStat -> variable assignOp expr
+assignStat -> variable assignOp expr
+
+% statBlock -> '{' {statement} '}' | statement | EPSILON
+statBlock -> '{' statements '}' | statement | EPSILON
+statements -> statement statements| EPSILON
+
+% expr -> arithExpr | relExpr
+expr -> arithExpr | relExpr
+
+% relExpr -> arithExpr relOp arithExpr
+relExpr -> arithExpr relOp arithExpr
+
+% arithExpr -> arithExpr addOp term | term
+arithExpr -> arithExpr addOp term | term
+
+% sign -> '+' | '-'
+sign -> '+' | '-'
+
+% term -> term multOp factor | factor
+term -> term multOp factor | factor
+
+% factor -> variable
+%            | functionCall
+%            | 'intNum' | 'floatNum'
+%            | '(' arithExpr ')'
+%            | 'not' factor
+%            | sign factor
+
+factor -> variable | functionCall | 'intNum' | 'floatNum' | '(' arithExpr ')' | 'not' factor | sign factor
+
+% variable -> {idnest} 'id' {indice}
+variable -> idnests 'id' indices
+idnests -> idnest idnests | EPSILON
+indices -> indice indices | EPSILON
+
+% functionCall -> {idnest} 'id' '(' aParams ')'
+functionCall -> idnests 'id' '(' aParams ')'
+
+% idnest -> 'id' {indice} '.'
+%           |'id' '(' aParams ')' '.'
+idnest -> 'id' indices '.' |'id' '(' aParams ')' '.'
+
+% indice -> '[' arithExpr ']'
+indice -> '[' arithExpr ']'
+
+% arraySize -> '[' 'intNum' ']'
+arraySize -> '[' 'intNum' ']'
+
+% type -> 'integer' | 'float' | 'id'
+type -> 'integer' | 'float' | 'id'
+
+% fParams -> type 'id' {arraySize} {fParamsTail} | EPSILON
+fParams -> type 'id' arraySizes fParamsTails | EPSILON
+fParamsTails -> fParamsTail fParamsTails | EPSILON
+
+% aParams -> expr {aParamsTail} | EPSILON
+aParams -> expr aParamsTails | EPSILON
+aParamsTails -> aParamsTail aParamsTails| EPSILON
+
+% fParamsTail -> ',' type 'id' {arraySize}
+fParamsTail -> ',' type 'id' arraySizes
+
+% aParamsTail -> ',' expr
+aParamsTail -> ',' expr
+
+% assignOp -> '='
+assignOp -> '='
+
+% relOp -> 'eq' | 'neq' | 'lt' | 'gt' | 'leq' | 'geq'
+relOp -> 'eq' | 'neq' | 'lt' | 'gt' | 'leq' | 'geq'
+
+% addOp -> '+' | '-' | 'or'
+addOp -> '+' | '-' | 'or'
+
+% multOp -> '*' | '/' | 'and'
+multOp -> '*' | '/' | 'and'
+
+             
+

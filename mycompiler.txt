@@ -49,19 +49,31 @@ statBlock -> '{' statements '}' | statement | EPSILON
 statements -> statement statements| EPSILON
 
 % expr -> arithExpr | relExpr
-expr -> arithExpr | relExpr
+% expr -> arithExpr | relExpr -- rewrite due to (a)
+% expr -> term arithExpr_ | term arithExpr_  relOp term arithExpr_ -- after rewriting, refactoring 
+expr -> term arithExpr_  relExprTail
+relExprTail -> relOp term arithExpr_ | EPSILON 
+
 
 % relExpr -> arithExpr relOp arithExpr
-relExpr -> arithExpr relOp arithExpr
+% -- relExpr -> arithExpr relOp arithExpr  -- rewrite due to (a)
+relExpr -> term arithExpr_  relOp term arithExpr_
 
 % arithExpr -> arithExpr addOp term | term
-arithExpr -> arithExpr addOp term | term
+% -- arithExpr -> arithExpr addOp term | term -- left recursion (a)
+arithExpr -> term arithExpr_
+arithExpr_ -> addOp term arithExpr_ | EPSILON
+
+
 
 % sign -> '+' | '-'
 sign -> '+' | '-'
 
 % term -> term multOp factor | factor
-term -> term multOp factor | factor
+% - term -> term multOp factor | factor -- left recursion (b )
+term -> factor term_
+term_ -> multOp factor term_ | EPSILON
+
 
 % factor -> variable
 %            | functionCall
@@ -70,7 +82,11 @@ term -> term multOp factor | factor
 %            | 'not' factor
 %            | sign factor
 
-factor -> variable | functionCall | 'intNum' | 'floatNum' | '(' arithExpr ')' | 'not' factor | sign factor
+% factor -> variable | functionCall | 'intNum' | 'floatNum' | '(' arithExpr ')' | 'not' factor | sign factor -- variable && functionCall ='id' , refactoring (c)
+factor -> variableOrfunctionCall | 'intNum' | 'floatNum' | '(' arithExpr ')' | 'not' factor | sign factor 
+variableOrfunctionCall ->  idnests 'id'  variableOrfunctionCallTail
+variableOrfunctionCallTail -> indices | '(' aParams ')'
+
 
 % variable -> {idnest} 'id' {indice}
 variable -> idnests 'id' indices
@@ -78,11 +94,13 @@ idnests -> idnest idnests | EPSILON
 indices -> indice indices | EPSILON
 
 % functionCall -> {idnest} 'id' '(' aParams ')'
-functionCall -> idnests 'id' '(' aParams ')'
+% -- functionCall -> idnests 'id' '(' aParams ')' -- due to (c), no needed anymore
 
 % idnest -> 'id' {indice} '.'
 %           |'id' '(' aParams ')' '.'
-idnest -> 'id' indices '.' |'id' '(' aParams ')' '.'
+% -- idnest -> 'id' indices '.' |'id' '(' aParams ')' '.' -- refactoring
+idnest -> 'id' idnest_
+idnest_ -> indices  | '(' aParams ')' '.' 
 
 % indice -> '[' arithExpr ']'
 indice -> '[' arithExpr ']'

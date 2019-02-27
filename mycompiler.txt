@@ -116,14 +116,16 @@ fParams -> type 'id' arraySizes fParamsTails | EPSILON
 fParamsTails -> fParamsTail fParamsTails | EPSILON
 
 % aParams -> expr {aParamsTail} | EPSILON
-aParams -> expr aParamsTails | EPSILON
-aParamsTails -> aParamsTail aParamsTails| EPSILON
+%% aParams -> expr aParamsTails | EPSILON -- simply(d)
+%% aParamsTails -> aParamsTail aParamsTails| EPSILON -- simply(d)
+aParams -> aParams ',' expr | EPSILON
 
 % fParamsTail -> ',' type 'id' {arraySize}
 fParamsTail -> ',' type 'id' arraySizes
 
 % aParamsTail -> ',' expr
-aParamsTail -> ',' expr
+%% aParamsTail -> ',' expr -- simply(d)
+
 
 % assignOp -> '='
 assignOp -> '='

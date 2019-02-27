@@ -118,7 +118,8 @@ fParamsTails -> fParamsTail fParamsTails | EPSILON
 % aParams -> expr {aParamsTail} | EPSILON
 %% aParams -> expr aParamsTails | EPSILON -- simply(d)
 %% aParamsTails -> aParamsTail aParamsTails| EPSILON -- simply(d)
-aParams -> aParams ',' expr | EPSILON
+aParams -> expr aParamsTails | EPSILON
+aParamsTails -> ',' expr aParamsTails | EPSILON
 
 % fParamsTail -> ',' type 'id' {arraySize}
 fParamsTail -> ',' type 'id' arraySizes

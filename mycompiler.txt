@@ -4,14 +4,27 @@ classDecls -> classDecl classDecls | EPSILON
 funcDefs -> funcDef funcDefs | EPSILON
 
 % classDecl -> 'class' 'id' [':' 'id' {',' 'id'}] '{' {varDecl} {funcDecl} '}' ';'
-classDecl -> 'class' 'id' classParent '{' varDecls funcDecls '}' ';' 
+%% classDecl -> 'class' 'id' classParent '{' varDecls funcDecls '}' ';' -- (ca) to solve the first and follow intersection: first and follow = type 
+
+classDecl -> 'class' 'id' classParent '{' classBody '}' ';'
+
 classParent -> ':' 'id' moreParent | EPSILON
 moreParent -> ',' 'id' moreParent | EPSILON
-varDecls -> varDecl varDecls | EPSILON
-funcDecls -> funcDecl funcDecls |EPSILON
+
+varFuncHead -> type 'id'
+funcBody -> '(' fParams ')' ';'
+varBody -> arraySizes ';'
+varOrFuncBodys -> varBody moreVars | funcBody moreFuns
+moreVars -> varFuncHead varBody moreVars | EPSILON
+moreFuns -> varFuncHead funcBody moreFuns | EPSILON
+classBody -> varFuncHead varOrFuncBodys | EPSILON
+
+
+varDecls -> varDecl varDecls | EPSILON 
+%% funcDecls -> funcDecl funcDecls |EPSILON (ca)
 
 % funcDecl -> type 'id' '(' fParams ')' ';' 
-funcDecl -> type 'id' '(' fParams ')' ';'
+%% funcDecl -> type 'id' '(' fParams ')' ';' (ca)
 
 % funcHead ->  type ['id' 'sr'] 'id' '(' fParams ')'
 funcHead -> type owner 'id' '(' fParams ')'
@@ -36,7 +49,10 @@ arraySizes -> arraySize arraySizes | EPSILON
 %             |'return' '(' expr ')' ';'
 statement -> assignStat ';'
              |'if' '(' expr ')' 'then' statBlock 'else' statBlock ';'
-             |'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' statBlock ';'
+% -- ambigurity
+% -- |'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' statBlock ';'
+% for()for()stat -> for(){ for() ; stateblock';} or for()for() statblock;
+             |'for' '(' type 'id' assignOp expr ';' relExpr ';' assignStat ')' {statBlock} ';'
              |'read' '(' variable ')' ';'
              |'write' '(' expr ')' ';'
              |'return' '(' expr ')' ';'
@@ -46,7 +62,7 @@ assignStat -> variable assignOp expr
 
 % statBlock -> '{' {statement} '}' | statement | EPSILON
 statBlock -> '{' statements '}' | statement | EPSILON
-statements -> statement statements| EPSILON
+
 
 % expr -> arithExpr | relExpr
 % expr -> arithExpr | relExpr -- rewrite due to (a)
@@ -62,8 +78,8 @@ relExpr -> term arithExpr_  relOp term arithExpr_
 % arithExpr -> arithExpr addOp term | term
 % -- arithExpr -> arithExpr addOp term | term -- left recursion (a)
 arithExpr -> term arithExpr_
-arithExpr_ -> addOp term arithExpr_ | EPSILON
 
+arithExpr_ -> addOp term arithExpr_ | EPSILON
 
 
 % sign -> '+' | '-'
